@@ -244,6 +244,9 @@ def parse_csv(client, dirPath, filename):
 	res = True
 	file_path = os.path.join(dirPath, filename)
 	print file_path
+	if (client.exists(index='max1', doc_type='mp', id=filename)):
+		print "Index already exists!"
+		return False
 	csvfile = open(file_path, 'r')
 	fieldnames = ("TEST", "STATUS", "VALUE", "U_LIMIT", "L_LIMIT", "TEST_TIME")
 	reader = csv.DictReader(csvfile, fieldnames)
