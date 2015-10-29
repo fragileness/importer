@@ -10,6 +10,8 @@ import tarfile
 import json
 import sys
 
+URL_PREFIX = "files://10.193.95.185/mla/atslog/"
+
 ####################################################################
 # Code here borrowed from json encoder
 import re
@@ -267,7 +269,7 @@ def parse_csv(client, dirPath, filename):
 	data = parse_ats_log(data, dirPath, filename)
 	data = parse_log(data, dirPath, filename)
 	data = parse_runinlog(data, dirPath, filename)
-	data += "\"file_path\": \"%s\"" %(file_path.replace('\\','/'))
+	data += "\"file_path\": \"%s\"" %(URL_PREFIX + os.path.normpath(file_path).replace('\\','/'))
 	#print os.path.abspath(file_path)
 	data +="}"
 	#return res

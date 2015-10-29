@@ -14,6 +14,7 @@ import datetime
 
 TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
+URL_PREFIX = "files://10.193.95.185/mla/atslog/"
 
 ####################################################################
 # Code here borrowed from json encoder
@@ -240,7 +241,7 @@ def parse_log(data, dirPath, filename):
 		data += "],"
 	return data
 
-def parse_csv(client, dirPath, filename):
+def parse_csv(client, dirPath, filename, url_path):
 	res = True
 	file_path = os.path.join(dirPath, filename)
 	print file_path
@@ -272,8 +273,9 @@ def parse_csv(client, dirPath, filename):
 	data = parse_ats_log(data, dirPath, filename)
 	data = parse_log(data, dirPath, filename)
 	data = parse_runinlog(data, dirPath, filename)
-	data += "\"file_path\": \"%s\"" %(file_path.replace('\\','/'))
-	#print os.path.abspath(file_path)
+	#url_path = os.path.normpath(url_path)
+	data += "\"file_path\": \"%s\"" %(URL_PREFIX + os.path.normpath(url_path).replace('\\','/'))
+	#print url_path
 	data +="}"
 	#return res
 	try:
@@ -290,7 +292,7 @@ def parse_csv(client, dirPath, filename):
 
 	return res
 
-def parser(client, root_path):
+def parser(client, root_path, url_path):
 	res = True
 	if (False == os.path.lexists(root_path)):
 		print "Path Error!"
@@ -299,7 +301,7 @@ def parser(client, root_path):
 		for f in fileNames:
 			if (".csv" == os.path.splitext(f)[-1]):
 				try:
-					res = res and parse_csv(client, dirPath, f)
+					res = res and parse_csv(client, dirPath, f, url_path)
 				except:
 					print "Unexpected error:", sys.exc_info()[0]
 					res = False
@@ -312,11 +314,13 @@ def parse_zip(client, dirPath, filename):
 	print file_path
 	with zipfile.ZipFile(file_path, 'r') as myzip:
 		myzip.extractall(TEMP_PATH)
-		res = parser(client, TEMP_PATH)
+		res = parser(client, TEMP_PATH, file_path)
 		shutil.rmtree(TEMP_PATH)
 	return res
 
 def parser_findzip(is_looping):
+	if (os.path.lexists(TEMP_PATH)):
+		shutil.rmtree(TEMP_PATH)
 	is_moving = False
 	root_path = "./"
 	move_path = "./"
