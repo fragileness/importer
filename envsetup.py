@@ -6,7 +6,20 @@ import json
 import sys
 import getopt
 
+def add_unique_mapping(properties, name, property):
+	try:
+		properties[name]
+	except:
+		properties[name] = {"properties" : property}
+		return
+	raise NameError('field "%s" configured twice' % (name))
+
 def setup(forced):
+	properties = {}
+	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date"}})
+	add_unique_mapping(properties, "Total Testing Time", {"VALUE" : {"type" : "double"}})
+	add_unique_mapping(properties, "Test End Time", {"VALUE" : {"type" : "date"}})
+
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	idx_client = IndicesClient(es)
 	if (idx_client.exists(index='max1')):
@@ -15,14 +28,14 @@ def setup(forced):
 		else :
 			print "Index already exists!"
 			return
+
 	csv_status = {"csv_status" : {"path_match": "*.STATUS", "mapping": {"index": "not_analyzed"}}}
 	csv_value = {"csv_value" : {"path_match": "*.VALUE", "mapping": {"index": "not_analyzed"}}}
 	csv_u_limit = {"csv_u_limit" : {"path_match": "*.U_LIMIT", "mapping": {"index": "not_analyzed"}}}
 	csv_l_limit = {"csv_l_limit" : {"path_match": "*.L_LIMIT", "mapping": {"index": "not_analyzed"}}}
 	csv_test_time = {"csv_test_time" : {"path_match": "*.TEST_TIME", "mapping": {"index": "not_analyzed"}}}
 	dynamic_templates = [csv_status, csv_value, csv_u_limit, csv_l_limit, csv_test_time]
-	total_test_time = {"Total Testing Time" : {"properties" : {"VALUE" : {"type" : "double"}}}}
-	properties = total_test_time
+
 	mappings = {"dynamic_templates" : dynamic_templates, "properties" : properties}
 	data = {"mappings" : {"mp": mappings}}
 	print json.dumps(data)
