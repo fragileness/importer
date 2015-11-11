@@ -241,6 +241,13 @@ def parse_log(data, dirPath, filename):
 		data += "],"
 	return data
 
+def if_mapping_exception():
+	try:
+		if ("MapperParsingException" in sys.exc_info()[1][1]):
+			print sys.exc_info()[1][1]
+	except:
+		pass
+
 def parse_csv(client, dirPath, filename, url_path):
 	res = True
 	file_path = os.path.join(dirPath, filename)
@@ -282,6 +289,7 @@ def parse_csv(client, dirPath, filename, url_path):
 		client.create(index='max1', doc_type='mp', id=filename, body=data)
 	except RequestError:
 		print "ERROR: Request Error"
+		if_mapping_exception()
 		res = False
 	except ConnectionTimeout:
 		print "ERROR: Connection Timeout"
