@@ -16,9 +16,9 @@ def add_unique_mapping(properties, name, property):
 
 def setup(forced):
 	properties = {}
-	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date"}})
+	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
 	add_unique_mapping(properties, "Total Testing Time", {"VALUE" : {"type" : "double"}})
-	add_unique_mapping(properties, "Test End Time", {"VALUE" : {"type" : "date"}})
+	add_unique_mapping(properties, "Test End Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
 
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	idx_client = IndicesClient(es)
