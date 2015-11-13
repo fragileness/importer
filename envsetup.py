@@ -17,7 +17,7 @@ def add_unique_mapping(properties, name, property):
 def setup(forced):
 	properties = {}
 	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
-	add_unique_mapping(properties, "Test End Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
+	add_unique_mapping(properties, "Test end Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
 
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	idx_client = IndicesClient(es)
@@ -28,12 +28,17 @@ def setup(forced):
 			print "Index already exists!"
 			return
 
+	runin_csv_status = {"runin_csv_status" : {"path_match": "RunInLog.*.STATUS", "mapping": {"index": "not_analyzed"}}}
+	runin_csv_value = {"runin_csv_value" : {"path_match": "RunInLog.*.VALUE", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
+	runin_csv_u_limit = {"runin_csv_u_limit" : {"path_match": "RunInLog.*.U_LIMIT", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
+	runin_csv_l_limit = {"runin_csv_l_limit" : {"path_match": "RunInLog.*.L_LIMIT", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
+	runin_csv_test_time = {"runin_csv_test_time" : {"path_match": "RunInLog.*.TEST_TIME", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
 	csv_status = {"csv_status" : {"path_match": "*.STATUS", "mapping": {"index": "not_analyzed"}}}
 	csv_value = {"csv_value" : {"path_match": "*.VALUE", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
 	csv_u_limit = {"csv_u_limit" : {"path_match": "*.U_LIMIT", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
 	csv_l_limit = {"csv_l_limit" : {"path_match": "*.L_LIMIT", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
 	csv_test_time = {"csv_test_time" : {"path_match": "*.TEST_TIME", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
-	dynamic_templates = [csv_status, csv_value, csv_u_limit, csv_l_limit, csv_test_time]
+	dynamic_templates = [runin_csv_status, runin_csv_value, runin_csv_u_limit, runin_csv_l_limit, runin_csv_test_time, csv_status, csv_value, csv_u_limit, csv_l_limit, csv_test_time]
 
 	mappings = {"dynamic_templates" : dynamic_templates, "properties" : properties}
 	data = {"settings" : {"index.mapping.ignore_malformed": True}, "mappings" : {"mp": mappings}}
