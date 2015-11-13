@@ -381,6 +381,7 @@ if __name__ == '__main__':
 		is_looping = True
 		print "Looping..."
 	while True:
+		print "Importing..."
 		parser_findzip(is_looping)
 		if (False == is_looping):
 			break
