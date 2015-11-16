@@ -16,6 +16,8 @@ def add_unique_mapping(properties, name, property):
 
 def setup(forced):
 	properties = {}
+	properties["ats_log"] = {"type" : "string"}
+	properties["file_path"] = {"type" : "string", "analyzer": "path-analyzer"}
 	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
 	add_unique_mapping(properties, "Test end Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
 
@@ -40,8 +42,14 @@ def setup(forced):
 	csv_test_time = {"csv_test_time" : {"path_match": "*.TEST_TIME", "mapping": {"index": "not_analyzed", "fields" : {"double" : {"type" : "double"}}}}}
 	dynamic_templates = [runin_csv_status, runin_csv_value, runin_csv_u_limit, runin_csv_l_limit, runin_csv_test_time, csv_status, csv_value, csv_u_limit, csv_l_limit, csv_test_time]
 
+	analysis = {}
+	analysis["analyzer"] = {}
+	analysis["tokenizer"] = {}
+	analysis["analyzer"]["path-analyzer"] = {"type": "custom", "tokenizer": "path-tokenizer"}
+	analysis["tokenizer"]["path-tokenizer"] = {"type": "path_hierarchy"}
+
 	mappings = {"dynamic_templates" : dynamic_templates, "properties" : properties}
-	data = {"settings" : {"index.mapping.ignore_malformed": True}, "mappings" : {"mp": mappings}}
+	data = {"settings" : {"index.mapping.ignore_malformed": True, "analysis": analysis}, "mappings" : {"mp": mappings}}
 	print json.dumps(data)
 	idx_client.create(index='max1', body=data)
 
