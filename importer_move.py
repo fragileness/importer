@@ -9,6 +9,7 @@ import zipfile
 import tarfile
 import json
 import sys
+import getopt
 import shutil
 import datetime
 import logging
@@ -16,6 +17,7 @@ import logging
 TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
 URL_PREFIX = "files://10.193.95.185/mla/atslog/"
+DEFAULT_FAIL_PATH = "./_fail"
 
 ####################################################################
 # Code here borrowed from json encoder
@@ -322,16 +324,11 @@ def parse_zip(client, dirPath, filename):
 		shutil.rmtree(TEMP_PATH)
 	return res
 
-def parser_findzip(is_looping):
+def parser_findzip(root_path, move_path, fail_path, is_looping):
 	if (os.path.lexists(TEMP_PATH)):
 		shutil.rmtree(TEMP_PATH)
 	is_moving = False
-	root_path = "./"
-	move_path = "./"
-	if (len(sys.argv) > 1):
-		root_path += sys.argv[1]
-	if (len(sys.argv) > 2):
-		move_path += sys.argv[2]
+	if (move_path != None):
 		if (os.path.lexists(move_path)):
 			is_moving = True
 	if (is_moving):
@@ -362,7 +359,10 @@ def parser_findzip(is_looping):
 				if (res):
 					j += 1
 				if (is_moving):
-					move_full_path = os.path.join(move_path, dirPath)
+					if (res):
+						move_full_path = os.path.join(move_path, dirPath)
+					else:
+						move_full_path = os.path.join(fail_path, dirPath)
 					print "Move to" , move_full_path
 					if (False == os.path.lexists(move_full_path)):
 						os.makedirs(move_full_path)
@@ -370,6 +370,43 @@ def parser_findzip(is_looping):
 	end = time.time()
 	elapsed = end - start
 	logger.info(str(j) + "/" + str(i) + " indices created; Time taken: " + str(elapsed) + " seconds.")
+
+def usage():
+	print "Options:"
+	print "-i	Input path[=./]"
+	print "-o	Output path[=None]"
+	print "-f	Fail path[=", DEFAULT_FAIL_PATH, "]"
+	print "-l	Do looping"
+	return
+
+def main(argv):
+	is_looping = False
+	root_path = "./"
+	move_path = None
+	fail_path = DEFAULT_FAIL_PATH
+	try:
+		opts, args = getopt.getopt(argv, "i:o:f:l")
+	except getopt.GetoptError:
+		usage()
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == "-i":
+			root_path += arg
+		elif opt == "-o":
+			move_path = "./" + arg
+		elif opt == "-f":
+			fail_path = "./" + arg
+		elif opt == "-l":
+			is_looping = True
+
+	logger.info("Importer started with input=" + root_path + ", output=" + move_path + ", fail=" + fail_path + ", loop=" + str(is_looping))
+	while True:
+		print "Importing..."
+		parser_findzip(root_path, move_path, fail_path, is_looping)
+		if (False == is_looping):
+			break
+		print "Waiting..."
+		time.sleep(10)
 
 if __name__ == '__main__':
 	logger = logging.getLogger('mylogger')
@@ -382,15 +419,4 @@ if __name__ == '__main__':
 	fh.setFormatter(formatter)
 	logger.addHandler(fh)
 	logger.addHandler(ch)
-
-	is_looping = False
-	if (len(sys.argv) > 3):
-		is_looping = True
-		print "Looping..."
-	while True:
-		print "Importing..."
-		parser_findzip(is_looping)
-		if (False == is_looping):
-			break
-		print "Waiting..."
-		time.sleep(10)
+	main(sys.argv[1:])
