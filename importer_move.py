@@ -11,6 +11,7 @@ import json
 import sys
 import shutil
 import datetime
+import logging
 
 TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
@@ -244,7 +245,7 @@ def parse_log(data, dirPath, filename):
 def if_mapping_exception():
 	try:
 		if ("MapperParsingException" in sys.exc_info()[1][1]):
-			print sys.exc_info()[1][1]
+			logger.error(str(sys.exc_info()[1][1]))
 	except:
 		pass
 
@@ -253,7 +254,7 @@ def parse_csv(client, dirPath, filename, url_path):
 	file_path = os.path.join(dirPath, filename)
 	print file_path
 	if (client.exists(index='max1', doc_type='mp', id=filename)):
-		print "Index already exists!"
+		logger.warning("Index already exists!")
 		return False
 	csvfile = open(file_path, 'r')
 	fieldnames = ("TEST", "STATUS", "VALUE", "U_LIMIT", "L_LIMIT", "TEST_TIME")
@@ -280,22 +281,13 @@ def parse_csv(client, dirPath, filename, url_path):
 	data = parse_ats_log(data, dirPath, filename)
 	data = parse_log(data, dirPath, filename)
 	data = parse_runinlog(data, dirPath, filename)
-	#url_path = os.path.normpath(url_path)
 	data += "\"file_path\": \"%s\"" %(URL_PREFIX + os.path.normpath(url_path).replace('\\','/'))
-	#print url_path
 	data +="}"
-	#return res
 	try:
 		client.create(index='max1', doc_type='mp', id=filename, body=data)
-	except RequestError:
-		print "ERROR: Request Error"
+	except:
+		logger.error("Exception on client.create()" + str(sys.exc_info()[0]))
 		if_mapping_exception()
-		res = False
-	except ConnectionTimeout:
-		print "ERROR: Connection Timeout"
-		res = False
-	except UnicodeDecodeError:
-		print "ERROR: Unicode Decode Error"
 		res = False
 
 	return res
@@ -311,7 +303,7 @@ def parser(client, root_path, url_path):
 				try:
 					res = res and parse_csv(client, dirPath, f, url_path)
 				except:
-					print "Unexpected error:", sys.exc_info()[0]
+					logger.error("Exception on parse_csv()" + str(sys.exc_info()[0]))
 					res = False
 					#raise
 	return res
@@ -319,10 +311,14 @@ def parser(client, root_path, url_path):
 def parse_zip(client, dirPath, filename):
 	res = True
 	file_path = os.path.join(dirPath, filename)
-	print file_path
+	logger.info(file_path)
 	with zipfile.ZipFile(file_path, 'r') as myzip:
 		myzip.extractall(TEMP_PATH)
-		res = parser(client, TEMP_PATH, file_path)
+		try:
+			res = parser(client, TEMP_PATH, file_path)
+		except:
+			logger.error("Exception on parse():" + str(sys.exc_info()[0]))
+			res = False
 		shutil.rmtree(TEMP_PATH)
 	return res
 
@@ -361,7 +357,7 @@ def parser_findzip(is_looping):
 				try:
 					res = parse_zip(es, dirPath, f)
 				except:
-					print "Unexpected error:", sys.exc_info()[0]
+					logger.error("Exception on parse_zip():" + str(sys.exc_info()[0]))
 					#raise
 				if (res):
 					j += 1
@@ -373,9 +369,20 @@ def parser_findzip(is_looping):
 					shutil.move(os.path.join(dirPath, f), move_full_path)
 	end = time.time()
 	elapsed = end - start
-	print j,"/", i, " indices created; Time taken: ", elapsed, "seconds."
+	logger.info(str(j) + "/" + str(i) + " indices created; Time taken: " + str(elapsed) + " seconds.")
 
 if __name__ == '__main__':
+	logger = logging.getLogger('mylogger')
+	logger.setLevel(logging.INFO)
+	fh = logging.FileHandler('test.log')
+	fh.setLevel(logging.DEBUG)
+	ch = logging.StreamHandler()
+	ch.setLevel(logging.DEBUG)
+	formatter = logging.Formatter('[%(asctime)s] [%(levelname)8s] %(message)s')
+	fh.setFormatter(formatter)
+	logger.addHandler(fh)
+	logger.addHandler(ch)
+
 	is_looping = False
 	if (len(sys.argv) > 3):
 		is_looping = True
