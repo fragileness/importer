@@ -13,11 +13,19 @@ import getopt
 import shutil
 import datetime
 import logging
+import smtplib
 
 TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
 URL_PREFIX = "files://10.193.95.185/mla/atslog/"
 DEFAULT_FAIL_PATH = "./_fail"
+
+mail_from_addr = "SW3_Postman <SW3_Postman@pegatroncorp.com>"
+mail_to_addrs = []
+mail_to_addrs += ['Onegin_Liang@pegatroncorp.com']
+EMAIL_FROM = mail_from_addr
+EMAIL_RECEIVERS = mail_to_addrs
+EMAIL_SUBJECT = "Importer stopped"
 
 ####################################################################
 # Code here borrowed from json encoder
@@ -382,6 +390,10 @@ def usage():
 	print "-l	Do looping"
 	return
 
+def listToStr(lst):
+	"""This method makes comma separated list item string"""
+	return ','.join(lst)
+
 def main(argv):
 	is_looping = False
 	root_path = "./"
@@ -410,6 +422,15 @@ def main(argv):
 			break
 		print "Waiting..."
 		time.sleep(10)
+	msg="Importer stopped."
+	msg_header = "From: " + EMAIL_FROM + "\n" + "To: " + listToStr(EMAIL_RECEIVERS) + "\n" + "Subject: " + EMAIL_SUBJECT + "\n"
+	msg_body =  msg_header + msg
+	try:
+		smtpObj = smtplib.SMTP('relay-b.pegatroncorp.com')
+		smtpObj.sendmail(EMAIL_FROM, EMAIL_RECEIVERS, msg_body)
+		smtpObj.quit()
+	except SMTPException as error:
+		print "Error: unable to send email :  {err}".format(err=error)
 
 if __name__ == '__main__':
 	logger = logging.getLogger('mylogger')
