@@ -328,7 +328,7 @@ def parser_findzip(root_path, move_path, fail_path, is_looping):
 	if (os.path.lexists(TEMP_PATH)):
 		shutil.rmtree(TEMP_PATH)
 	is_moving = False
-	if (move_path != None):
+	if (move_path is not None):
 		if (os.path.lexists(move_path)):
 			is_moving = True
 	if (is_moving):
@@ -399,7 +399,7 @@ def main(argv):
 		elif opt == "-l":
 			is_looping = True
 
-	logger.info("Importer started with input=" + root_path + ", output=" + move_path + ", fail=" + fail_path + ", loop=" + str(is_looping))
+	logger.info("Importer started with input=" + root_path + ", output=" + str(move_path) + ", fail=" + fail_path + ", loop=" + str(is_looping))
 	while True:
 		print "Importing..."
 		parser_findzip(root_path, move_path, fail_path, is_looping)
