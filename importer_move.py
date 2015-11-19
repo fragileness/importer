@@ -445,6 +445,10 @@ def main(argv):
 		msg = traceback.format_exc()
 		print msg
 
+	if (False == is_looping):
+		return
+
+	logger.info("Mailing...")
 	mail_obj = MIMEMultipart()
 	mail_obj['Subject'] = EMAIL_SUBJECT
 	mail_obj['From'] = EMAIL_FROM
