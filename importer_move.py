@@ -14,6 +14,9 @@ import shutil
 import datetime
 import logging
 import smtplib
+import traceback
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
@@ -23,6 +26,8 @@ DEFAULT_FAIL_PATH = "./_fail"
 mail_from_addr = "SW3_Postman <SW3_Postman@pegatroncorp.com>"
 mail_to_addrs = []
 mail_to_addrs += ['Onegin_Liang@pegatroncorp.com']
+mail_to_addrs += ['Tommy_Chu@pegatroncorp.com']
+mail_to_addrs += ['Paul1_Huang@pegatroncorp.com']
 EMAIL_FROM = mail_from_addr
 EMAIL_RECEIVERS = mail_to_addrs
 EMAIL_SUBJECT = "Importer stopped"
@@ -419,17 +424,31 @@ def main(argv):
 		elif opt == "-l":
 			is_looping = True
 
+	msg = "Importer naturally stopped."
 	logger.info("Importer started with input=" + root_path + ", output=" + str(move_path) + ", fail=" + fail_path + ", loop=" + str(is_looping))
-	while True:
-		print "Importing..."
-		parser_findzip(root_path, move_path, fail_path, is_looping)
-		if (False == is_looping):
-			break
-		print "Waiting..."
-		time.sleep(10)
-	msg="Importer stopped."
-	msg_header = "From: " + EMAIL_FROM + "\n" + "To: " + listToStr(EMAIL_RECEIVERS) + "\n" + "Subject: " + EMAIL_SUBJECT + "\n"
-	msg_body =  msg_header + msg
+	try:
+		while True:
+			print "Importing..."
+			parser_findzip(root_path, move_path, fail_path, is_looping)
+			if (False == is_looping):
+				break
+			print "Waiting..."
+			time.sleep(10)
+	except:
+		msg = traceback.format_exc()
+		print msg
+
+	mail_obj = MIMEMultipart()
+	mail_obj['Subject'] = EMAIL_SUBJECT
+	mail_obj['From'] = EMAIL_FROM
+	mail_obj['To'] = listToStr(EMAIL_RECEIVERS)
+	mail_obj.preamble = "This is a multi-part message in MIME format."
+	mail_obj.epilogue = ''
+	msg_txt = MIMEText(msg)
+	msg_txt.replace_header('Content-Type', 'text/html; charset="big5"')
+	mail_obj.attach(msg_txt)
+	msg_body = mail_obj.as_string()
+
 	try:
 		smtpObj = smtplib.SMTP('relay-b.pegatroncorp.com')
 		smtpObj.sendmail(EMAIL_FROM, EMAIL_RECEIVERS, msg_body)
