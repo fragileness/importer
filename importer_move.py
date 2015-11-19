@@ -382,12 +382,19 @@ def parser_findzip(root_path, move_path, fail_path, is_looping):
 					else:
 						move_full_path = os.path.join(fail_path, dirPath)
 					print "Move to" , move_full_path
-					if (False == os.path.lexists(move_full_path)):
-						os.makedirs(move_full_path)
-					try:
-						shutil.move(os.path.join(dirPath, f), move_full_path)
-					except:
-						logger.error("Exception on moving file:" + str(sys.exc_info()[0]))
+					if (os.path.lexists(os.path.join(move_full_path, f))):
+						logger.error("File already exists: " + os.path.join(move_full_path, f))
+						try:
+							os.remove(os.path.join(dirPath, f))
+						except:
+							logger.error("Exception on deleting file:" + str(sys.exc_info()[0]))
+					else:
+						if (False == os.path.lexists(move_full_path)):
+							os.makedirs(move_full_path)
+						try:
+							shutil.move(os.path.join(dirPath, f), move_full_path)
+						except:
+							logger.error("Exception on moving file:" + str(sys.exc_info()[0]))
 	end = time.time()
 	elapsed = end - start
 	logger.info(str(j) + "/" + str(i) + " indices created; Time taken: " + str(elapsed) + " seconds.")
