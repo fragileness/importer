@@ -460,12 +460,9 @@ def main(argv):
 	mail_obj.attach(msg_txt)
 	msg_body = mail_obj.as_string()
 
-	try:
-		smtpObj = smtplib.SMTP('relay-b.pegatroncorp.com')
-		smtpObj.sendmail(EMAIL_FROM, EMAIL_RECEIVERS, msg_body)
-		smtpObj.quit()
-	except SMTPException as error:
-		print "Error: unable to send email :  {err}".format(err=error)
+	smtpObj = smtplib.SMTP('relay-b.pegatroncorp.com')
+	smtpObj.sendmail(EMAIL_FROM, EMAIL_RECEIVERS, msg_body)
+	smtpObj.quit()
 
 if __name__ == '__main__':
 	logger = logging.getLogger('mylogger')
