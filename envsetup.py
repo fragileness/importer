@@ -49,7 +49,7 @@ def setup(forced):
 	analysis["tokenizer"]["path-tokenizer"] = {"type": "path_hierarchy"}
 
 	mappings = {"dynamic_templates" : dynamic_templates, "properties" : properties}
-	data = {"settings" : {"index.mapping.ignore_malformed": True, "analysis": analysis}, "mappings" : {"mp": mappings}}
+	data = {"settings" : {"index.mapping.ignore_malformed": True, "number_of_replicas": 1, "analysis": analysis}, "mappings" : {"mp": mappings}}
 	print json.dumps(data)
 	idx_client.create(index='max1', body=data)
 
