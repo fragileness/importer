@@ -307,14 +307,14 @@ def parse_csv(client, dirPath, filename, url_path):
 
 	return res
 
-def parser(client, root_path, url_path):
+def parser(client, root_path, url_path, filename):
 	res = True
 	if (False == os.path.lexists(root_path)):
 		print "Path Error!"
 		return False
 	for dirPath, dirNames, fileNames in os.walk(root_path):
 		for f in fileNames:
-			if (".csv" == os.path.splitext(f)[-1]):
+			if ((".csv" == os.path.splitext(f)[-1]) and os.path.splitext(f)[0] == os.path.splitext(filename)[0]):
 				try:
 					res = res and parse_csv(client, dirPath, f, url_path)
 				except:
@@ -323,14 +323,14 @@ def parser(client, root_path, url_path):
 					#raise
 	return res
 
-def parse_zip(client, dirPath, filename):
+def parse_unzip(client, dirPath, filename):
 	res = True
 	file_path = os.path.join(dirPath, filename)
 	logger.info(file_path)
 	with zipfile.ZipFile(file_path, 'r') as myzip:
 		myzip.extractall(TEMP_PATH)
 		try:
-			res = parser(client, TEMP_PATH, file_path)
+			res = parser(client, TEMP_PATH, file_path, filename)
 		except:
 			logger.error("Exception on parse():" + str(sys.exc_info()[0]))
 			res = False
@@ -370,9 +370,9 @@ def parser_findzip(root_path, move_path, fail_path, is_looping):
 				i += 1
 				res = False
 				try:
-					res = parse_zip(es, dirPath, f)
+					res = parse_unzip(es, dirPath, f)
 				except:
-					logger.error("Exception on parse_zip():" + str(sys.exc_info()[0]))
+					logger.error("Exception on parse_unzip():" + str(sys.exc_info()[0]))
 					#raise
 				if (res):
 					j += 1
