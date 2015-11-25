@@ -6,6 +6,9 @@ import json
 import sys
 import getopt
 
+PROJECT = "max1"
+STAGE = "mp"
+
 def add_unique_mapping(properties, name, property):
 	try:
 		properties[name]
@@ -23,9 +26,9 @@ def setup(forced):
 
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	idx_client = IndicesClient(es)
-	if (idx_client.exists(index='max1')):
+	if (idx_client.exists(index=PROJECT)):
 		if (forced):
-			idx_client.delete(index='max1')
+			idx_client.delete(index=PROJECT)
 		else :
 			print "Index already exists!"
 			return
@@ -49,9 +52,9 @@ def setup(forced):
 	analysis["tokenizer"]["path-tokenizer"] = {"type": "path_hierarchy"}
 
 	mappings = {"dynamic_templates" : dynamic_templates, "properties" : properties}
-	data = {"settings" : {"index.mapping.ignore_malformed": True, "number_of_replicas": 1, "analysis": analysis}, "mappings" : {"mp": mappings}}
+	data = {"settings" : {"index.mapping.ignore_malformed": True, "number_of_replicas": 1, "analysis": analysis}, "mappings" : {STAGE: mappings}}
 	print json.dumps(data)
-	idx_client.create(index='max1', body=data)
+	idx_client.create(index=PROJECT, body=data)
 
 def usage():
 	return

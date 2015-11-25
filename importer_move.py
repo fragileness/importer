@@ -22,6 +22,8 @@ TEMP_PATH = "./_temp"
 TIME_BUFFER = 60 * 5
 URL_PREFIX = "files://10.193.95.185/mla/atslog/"
 DEFAULT_FAIL_PATH = "./_fail"
+PROJECT = "max1"
+STAGE = "mp"
 
 mail_from_addr = "SW3_Postman <SW3_Postman@pegatroncorp.com>"
 mail_to_addrs = []
@@ -268,7 +270,7 @@ def parse_csv(client, dirPath, filename, url_path):
 	res = True
 	file_path = os.path.join(dirPath, filename)
 	print file_path
-	if (client.exists(index='max1', doc_type='mp', id=filename)):
+	if (client.exists(index=PROJECT, doc_type=STAGE, id=filename)):
 		logger.warning("Index already exists!")
 		return False
 	csvfile = open(file_path, 'r')
@@ -299,7 +301,7 @@ def parse_csv(client, dirPath, filename, url_path):
 	data += "\"file_path\": \"%s\"" %(URL_PREFIX + os.path.normpath(url_path).replace('\\','/'))
 	data +="}"
 	try:
-		client.create(index='max1', doc_type='mp', id=filename, body=data)
+		client.create(index=PROJECT, doc_type=STAGE, id=filename, body=data)
 	except:
 		logger.error("Exception on client.create()" + str(sys.exc_info()[0]))
 		if_mapping_exception()
