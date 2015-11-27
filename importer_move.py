@@ -310,20 +310,23 @@ def parse_csv(client, dirPath, filename, url_path):
 	return res
 
 def parser(client, root_path, url_path, filename):
-	res = True
+	res1 = False
+	res2 = True
 	if (False == os.path.lexists(root_path)):
 		print "Path Error!"
 		return False
 	for dirPath, dirNames, fileNames in os.walk(root_path):
 		for f in fileNames:
-			if ((".csv" == os.path.splitext(f)[-1]) and os.path.splitext(f)[0] == os.path.splitext(filename)[0]):
+			if ((".csv" == os.path.splitext(f)[-1]) and filename.split('_', 1)[0] == f.split('_', 1)[0]):
+				res1 = True
 				try:
-					res = res and parse_csv(client, dirPath, f, url_path)
+					res2 = parse_csv(client, dirPath, f, url_path) and res2
 				except:
 					logger.error("Exception on parse_csv()" + str(sys.exc_info()[0]))
 					res = False
 					#raise
-	return res
+				break
+	return res1 and res2
 
 def parse_unzip(client, dirPath, filename):
 	res = True
