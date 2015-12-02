@@ -362,6 +362,8 @@ def parser_findzip(root_path, move_path, fail_path, is_looping):
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	for dirPath, dirNames, fileNames in os.walk(root_path):
 		for f in fileNames:
+			if (".zip" != os.path.splitext(f)[-1]):
+				continue
 			try:
 				file_create_time = os.path.getctime(os.path.join(dirPath, f))
 			except:
@@ -371,7 +373,7 @@ def parser_findzip(root_path, move_path, fail_path, is_looping):
 			process_this_file = True
 			if (is_looping):
 				process_this_file = ((start - file_create_time) > TIME_BUFFER)
-			if (process_this_file and (".zip" == os.path.splitext(f)[-1])):
+			if (process_this_file):
 				i += 1
 				res = False
 				try:
