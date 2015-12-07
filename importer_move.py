@@ -326,6 +326,8 @@ def parser(client, root_path, url_path, filename):
 					res = False
 					#raise
 				break
+	if (False == res1):
+		logger.error("Expected .csv not found")
 	return res1 and res2
 
 def parse_unzip(client, dirPath, filename):
