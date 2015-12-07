@@ -298,7 +298,7 @@ def parse_csv(client, dirPath, filename, url_path):
 	data = parse_ats_log(data, dirPath, filename)
 	data = parse_log(data, dirPath, filename)
 	data = parse_runinlog(data, dirPath, filename)
-	data += "\"file_path\": \"%s\"" %(URL_PREFIX + os.path.normpath(url_path).replace('\\','/'))
+	data += "\"file_path\": \"%s\"" %(os.path.normpath(url_path).replace('\\','\\\\'))
 	data +="}"
 	try:
 		client.create(index=PROJECT, doc_type=STAGE, id=filename, body=data)
