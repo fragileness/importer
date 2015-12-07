@@ -266,11 +266,11 @@ def if_mapping_exception():
 	except:
 		pass
 
-def parse_csv(client, dirPath, filename, url_path):
+def parse_csv(client, dirPath, filename, url_path, zipname):
 	res = True
 	file_path = os.path.join(dirPath, filename)
 	print file_path
-	if (client.exists(index=PROJECT, doc_type=STAGE, id=filename)):
+	if (client.exists(index=PROJECT, doc_type=STAGE, id=zipname)):
 		logger.warning("Index already exists!")
 		return False
 	csvfile = open(file_path, 'r')
@@ -301,7 +301,7 @@ def parse_csv(client, dirPath, filename, url_path):
 	data += "\"file_path\": \"%s\"" %(os.path.normpath(url_path).replace('\\','\\\\'))
 	data +="}"
 	try:
-		client.create(index=PROJECT, doc_type=STAGE, id=filename, body=data)
+		client.create(index=PROJECT, doc_type=STAGE, id=zipname, body=data)
 	except:
 		logger.error("Exception on client.create()" + str(sys.exc_info()[0]))
 		if_mapping_exception()
@@ -320,7 +320,7 @@ def parser(client, root_path, url_path, filename):
 			if ((".csv" == os.path.splitext(f)[-1]) and filename.split('_', 1)[0] == f.split('_', 1)[0]):
 				res1 = True
 				try:
-					res2 = parse_csv(client, dirPath, f, url_path) and res2
+					res2 = parse_csv(client, dirPath, f, url_path, filename) and res2
 				except:
 					logger.error("Exception on parse_csv()" + str(sys.exc_info()[0]))
 					res = False
