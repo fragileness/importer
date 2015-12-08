@@ -325,7 +325,7 @@ def parser(client, root_path, url_path, filename):
 					res2 = parse_csv(client, dirPath, f, url_path, filename) and res2
 				except:
 					logger.error("Exception on parse_csv()" + str(sys.exc_info()[0]))
-					res = False
+					res2 = False
 					#raise
 				break
 	if (False == res1):
@@ -333,7 +333,7 @@ def parser(client, root_path, url_path, filename):
 	return res1 and res2
 
 def parse_unzip(client, dirPath, filename):
-	res = True
+	res = False
 	file_path = os.path.join(dirPath, filename)
 	logger.info(file_path)
 	with zipfile.ZipFile(file_path, 'r') as myzip:
