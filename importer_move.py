@@ -288,6 +288,8 @@ def parse_csv(client, dirPath, filename, url_path, zipname):
 		status = replace_for_json(status)
 		value = row['VALUE']
 		value = replace_for_json(value)
+		if (test == "Test Start Time" or test == "Test end Time"):
+			value += "+08:00"
 		u_limit = row['U_LIMIT']
 		u_limit = replace_for_json(u_limit)
 		l_limit = row['L_LIMIT']

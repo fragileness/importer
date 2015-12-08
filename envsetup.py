@@ -21,8 +21,8 @@ def setup(forced):
 	properties = {}
 	properties["ats_log"] = {"type" : "string"}
 	properties["file_path"] = {"type" : "string", "analyzer": "path-analyzer"}
-	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
-	add_unique_mapping(properties, "Test end Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd"}})
+	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ssZ||yyyy/MM/ddZ"}})
+	add_unique_mapping(properties, "Test end Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ssZ||yyyy/MM/ddZ"}})
 
 	es = Elasticsearch([{'host': 'localhost', 'port': 9200}], max_retries=10, retry_on_timeout=True)
 	idx_client = IndicesClient(es)
