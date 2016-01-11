@@ -281,11 +281,14 @@ def parse_csv(client, dirPath, filename, url_path, zipname):
 	row_counter = len(rows)
 	row_no = 1
 	data="{"
+	fail_symptom = None
 	for row in rows:
 		test = row['TEST']
 		test = replace_for_json(test)
 		status = row['STATUS']
 		status = replace_for_json(status)
+		if ((fail_symptom == None) and (status == "1")):
+			fail_symptom = test
 		value = row['VALUE']
 		value = replace_for_json(value)
 		if (test == "Test Start Time" or test == "Test end Time"):
@@ -297,6 +300,7 @@ def parse_csv(client, dirPath, filename, url_path, zipname):
 		test_time = row['TEST_TIME']
 		test_time = replace_for_json(test_time)
 		data += "\"%s\": { \"STATUS\": \"%s\", \"VALUE\": \"%s\", \"U_LIMIT\": \"%s\", \"L_LIMIT\": \"%s\", \"TEST_TIME\": \"%s\" }, " %(test, status, value, u_limit, l_limit, test_time)
+	data += "\"fail_symptom\": \"%s\", " %(fail_symptom)
 	data = parse_ats_log(data, dirPath, filename)
 	data = parse_log(data, dirPath, filename)
 	data = parse_runinlog(data, dirPath, filename)

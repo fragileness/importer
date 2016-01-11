@@ -19,6 +19,7 @@ def add_unique_mapping(properties, name, property):
 
 def setup(forced):
 	properties = {}
+	properties["fail_symptom"] = {"type" : "string", "index": "not_analyzed"}
 	properties["ats_log"] = {"type" : "string"}
 	properties["file_path"] = {"type" : "string", "analyzer": "path-analyzer"}
 	add_unique_mapping(properties, "Test Start Time", {"VALUE" : {"type" : "date", "format": "yyyy/MM/dd HH:mm:ssZ||yyyy/MM/ddZ"}})
