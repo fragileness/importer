@@ -87,7 +87,7 @@ def notify_rocket(addr, user, password, room, msg):
 def notify_im(project, item, reason, timestamp):
 	msg = timestamp + ", Alert, " + project + ", " + item + " " + reason
 	notify_rocket(private.rocket_url, private.rocket_user, private.rocket_password, private.rocket_room, msg)
-	notify_rocket(private.rocketdemo_url, private.rocketdemo_user, private.rocketdemo_password, private.rocketdemo_room, msg)
+	#notify_rocket(private.rocketdemo_url, private.rocketdemo_user, private.rocketdemo_password, private.rocketdemo_room, msg)
 
 def reset(tsp, rows):
 	for row in rows:
