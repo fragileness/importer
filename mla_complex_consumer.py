@@ -9,10 +9,13 @@ import urllib
 import urllib2
 import json
 import os
+import time
 import datetime
 import traceback
 import logging
 import private
+LOG_PREFIX = 'mla_complex_consumer'
+LOG_POSTFIX = '.log'
 
 EMAIL_SUBJECT = "[MLA] Factory Alert"
 
@@ -26,7 +29,7 @@ def notify_mail(project, tsp, tests):
 	mail_obj = MIMEMultipart()
 	mail_obj['Subject'] = EMAIL_SUBJECT
 	mail_obj['From'] = private.mail_from_addr
-	mail_obj['To'] = listToStr(private.mail_to_addrs())
+	mail_obj['To'] = listToStr(private.get_mail_list())
 	mail_obj.preamble = "This is a multi-part message in MIME format."
 	mail_obj.epilogue = ''
 	msg_txt = MIMEText(msg.replace("\n", "<br>"))
@@ -34,7 +37,7 @@ def notify_mail(project, tsp, tests):
 	mail_obj.attach(msg_txt)
 	msg_body = mail_obj.as_string()
 	smtpObj = smtplib.SMTP(private.mail_server_addr)
-	smtpObj.sendmail(private.mail_from_addr, private.mail_to_addrs(), msg_body)
+	smtpObj.sendmail(private.mail_from_addr, private.get_mail_list(), msg_body)
 	smtpObj.quit()
 
 def notify_rocket(addr, user, password, room, msg):
@@ -85,7 +88,7 @@ def notify_rocket(addr, user, password, room, msg):
 	print "status=" + message
 
 def notify_im(project, item, reason, timestamp):
-	msg = timestamp + ", Alert, " + project + ", " + item + " " + reason
+	msg = str(os.getpid()) + ", " + timestamp + ", Alert, " + project + ", " + item + " " + reason
 	notify_rocket(private.rocket_url, private.rocket_user, private.rocket_password, private.rocket_room, msg)
 	#notify_rocket(private.rocketdemo_url, private.rocketdemo_user, private.rocketdemo_password, private.rocketdemo_room, msg)
 
@@ -169,7 +172,7 @@ if (len(sys.argv) > 1):
 	expected_project = sys.argv[1]
 logger = logging.getLogger('mylogger')
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler('test.log')
+fh = logging.FileHandler(LOG_PREFIX + "_" + str(expected_project) + "_" + time.strftime("%Y%m%d-%H%M%S") + LOG_POSTFIX)
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
