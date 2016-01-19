@@ -131,7 +131,7 @@ logger.addHandler(ch)
 
 consumer = KafkaConsumer('test', bootstrap_servers=[private.kafka_server_addr])
 
-logger.info("mla_demo_consumer: waiting project %s..." % (expected_project))
+logger.info("%s: waiting project %s..." % (LOG_PREFIX, expected_project))
 for message in consumer:
 	logger.info("%s:%d:%d: key=%s" % (message.topic, message.partition, message.offset, message.key))
 	parse_pkt(message.value, expected_project)
