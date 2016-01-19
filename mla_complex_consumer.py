@@ -98,8 +98,8 @@ def reset(tsp, rows):
 			continue
 		test = row['TEST']
 		field = tsp + "." + test
-		total_fail[field] = 0
-		continuous_fail[field] = 0
+		total_fail.pop(field, None)
+		continuous_fail.pop(field, None)
 
 def parse_pkt(pkt, expected_project):
 	fieldnames = ("TEST", "STATUS", "VALUE", "U_LIMIT", "L_LIMIT", "TEST_TIME")
@@ -143,8 +143,8 @@ def parse_pkt(pkt, expected_project):
 				elif (continuous_fail[field] >= 3):
 					reason = "continuous fail = 3"
 				logger.error(field + ": " + reason)
-				total_fail[field] = 0
-				continuous_fail[field] = 0
+				total_fail.pop(field, None)
+				continuous_fail.pop(field, None)
 				if (err_msg != ""):
 					err_msg += "\n"
 				err_msg += test
@@ -153,7 +153,7 @@ def parse_pkt(pkt, expected_project):
 			#assume that the test will stop when meet first fail item, so we can skip other counters
 			break
 		elif (row['STATUS'] == "0"):
-			continuous_fail[field] = 0
+			continuous_fail.pop(field, None)
 	if (err_msg != ""):
 		reset(tsp, rows)
 		try:
@@ -186,8 +186,8 @@ continuous_fail = defaultdict(int)
 
 consumer = KafkaConsumer('test', bootstrap_servers=[private.kafka_server_addr])
 
-print("mla_complex_consumer: waiting project %s..." % (expected_project))
-logger.info("mla_complex_consumer: waiting project %s..." % (expected_project))
+print("%s: waiting project %s..." % (LOG_PREFIX, expected_project))
+logger.info("%s: waiting project %s..." % (LOG_PREFIX, expected_project))
 for message in consumer:
 	print("%s:%d:%d: key=%s" % (message.topic, message.partition, message.offset, message.key))
 	parse_pkt(message.value, expected_project)
