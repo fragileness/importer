@@ -66,8 +66,8 @@ def notify_rocket(addr, user, password, room, msg):
 	message = jdata["data"]["message"]
 	#print "status=" + message
 
-def notify_im(project, item, reason, timestamp):
-	msg = str(os.getpid()) + ", " + timestamp + ", " + project + ", " + item + ", " + reason
+def notify_im(project, mo, item, reason, timestamp):
+	msg = str(os.getpid()) + ", " + timestamp + ", " + project + ", " + mo + ", " + item + ", " + reason
 	logger.info(msg)
 	notify_rocket(private.rocket_url, private.rocket_user, private.rocket_password, private.rocket_room_demo_consumer, msg)
 
@@ -82,6 +82,7 @@ def parse_pkt(pkt, expected_project):
 	isn = "NOT_FOUND"
 	test = "NOT_FOUND"
 	field = "NOT_FOUND"
+	mo = "NOT_FOUND"
 
 	for row in rows:
 		if (row['TEST'] == "DATASOURCE"):
@@ -92,6 +93,8 @@ def parse_pkt(pkt, expected_project):
 			project = row['VALUE']
 		elif (row['TEST'] == "ISN"):
 			isn = row['VALUE']
+		elif (row['TEST'] == "MO_From_SFIS"):
+			mo = row['VALUE']
 	if (((expected_project != None) and (project != expected_project)) or (datasource != "ON-LINE")):
 		logger.warning("Project: %s, TSP: %s, DATASOURCE: %s" % (project, tsp, datasource))
 		return
@@ -110,7 +113,7 @@ def parse_pkt(pkt, expected_project):
 			break
 
 	try:
-		notify_im(project, tsp, reason, str(datetime.datetime.now()))
+		notify_im(project, mo, tsp, reason, str(datetime.datetime.now()))
 	except:
 		except_msg = traceback.format_exc()
 		print except_msg
