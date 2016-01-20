@@ -25,7 +25,6 @@ def listToStr(lst):
 	return ','.join(lst)
 
 def notify_mail(project, mo, tsp, tests):
-	return
 	msg = "Project: %s\nMO: %s\nTSP: %s\n\n%s" % (project, mo, tsp, tests)
 	print msg
 	mail_obj = MIMEMultipart()
@@ -91,7 +90,7 @@ def notify_rocket(addr, user, password, room, msg):
 
 def notify_im(project, mo, item, reason, timestamp):
 	msg = str(os.getpid()) + ", " + timestamp + ", Alert, " + project + ", " + mo + ", " + item + " " + reason
-	#notify_rocket(private.rocket_url, private.rocket_user, private.rocket_password, private.rocket_room, msg)
+	notify_rocket(private.rocket_url, private.rocket_user, private.rocket_password, private.rocket_room, msg)
 
 def reinit_counter(index):
 	total_fail.pop(index)
@@ -115,6 +114,7 @@ def add_mo(mo):
 		#We need to add new mo to mo_list
 		if len(ordered_mo_list) >= MO_LIMIT:
 			poped_mo = ordered_mo_list.pop(0)
+			logger.info("%s in, %s out" % (mo, poped_mo))
 			poped_index = mo_list.index(poped_mo)
 			mo_list.pop(poped_index)
 			mo_list.insert(poped_index, mo)
