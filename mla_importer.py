@@ -31,6 +31,7 @@ import smtplib
 import traceback
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+import ConfigParser
 
 import mla_setup
 import private
@@ -425,9 +426,25 @@ def usage():
 	print ""
 	print "  -f (--fail_location) <path>"
 	print ""
-	print "  -d (--doc_type) <doc_type>"
+	print "  -t (--doc_type) <doc_type>"
 	print ""
 	print "  -i (--loop)"
+
+def get_with_default(config, section, name, default):
+    if config.has_option(section,name):
+        return config.get(section,name)
+    else:
+        return default
+
+def parse_config(arg, input_location, input_subfolder, output_location, fail_location, doctype):
+	config = ConfigParser.RawConfigParser()
+	config.read(arg)
+	input_location = get_with_default(config, 'Importer', 'input_location', input_location)
+	input_subfolder = get_with_default(config, 'Importer', 'input_subfolder', input_subfolder)
+	output_location = get_with_default(config, 'Importer', 'output_location', output_location)
+	fail_location = get_with_default(config, 'Importer', 'fail_location', fail_location)
+	doctype = get_with_default(config, 'Importer', 'doctype', doctype)
+	return (input_location, input_subfolder, output_location, fail_location, doctype)
 
 def main(argv):
 	es_server_addr = 'localhost'
@@ -438,7 +455,7 @@ def main(argv):
 	doctype = ES_DOC_TYPE
 	is_looping = False
 	try:
-		opts, args = getopt.getopt(argv, "i:s:o:f:t:l", ["input_location=", "input_subfolder=", "output_location=", "fail_location=", "doc_type=", "loop"])
+		opts, args = getopt.getopt(argv, "i:s:o:f:t:c:l", ["input_location=", "input_subfolder=", "output_location=", "fail_location=", "doc_type=", "config=" "loop"])
 	except getopt.GetoptError:
 		usage()
 		sys.exit(2)
@@ -459,6 +476,8 @@ def main(argv):
 			fail_location = os.path.abspath(arg)
 		elif opt in ("-t", "--doc_type"):
 			doctype = arg
+		elif opt in ("-c", "--config"):
+			(input_location, input_subfolder, output_location, fail_location, doctype) = parse_config(arg, input_location, input_subfolder, output_location, fail_location, doctype)
 		elif opt in ("-l", "--loop"):
 			is_looping = True
 	logger = logging.getLogger('mla_logger')
