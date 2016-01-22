@@ -275,10 +275,10 @@ def parse_runinlog(dirPath, filename):
 	data +="},"
 	return data
 
-def mla_import_csv(es, project, file_location, filename, es_id, payload=""):
+def mla_import_csv(es, project, doctype, file_location, filename, es_id, payload=""):
 	res = False
 	logger = logging.getLogger('mla_logger')
-	if (es.exists(index=project, doc_type=ES_DOC_TYPE, id=es_id)):
+	if (es.exists(index=project, doc_type=doctype, id=es_id)):
 		logger.warning("id %s already exists!" % (es_id))
 		return False
 	file_path = os.path.join(file_location, filename)
@@ -317,22 +317,22 @@ def mla_import_csv(es, project, file_location, filename, es_id, payload=""):
 		data +="}"
 		res = True
 		try:
-			es.create(index=project, doc_type=ES_DOC_TYPE, id=es_id, body=data)
+			es.create(index=project, doc_type=doctype, id=es_id, body=data)
 		except:
 			logger.error("Exception on es.create()" + str(sys.exc_info()[0]))
 			res = False
 	return res
 
-def mla_import_log(es, project, log_location, es_id, payload):
+def mla_import_log(es, project, doctype, log_location, es_id, payload):
 	res = False
 	for dirPath, dirNames, fileNames in os.walk(log_location):
 		for filename in fileNames:
 			if ((".csv" == os.path.splitext(filename)[-1]) and es_id.split('_', 1)[0] == filename.split('_', 1)[0]):
-				res = mla_import_csv(es, project, dirPath, filename, es_id, payload)
+				res = mla_import_csv(es, project, doctype, dirPath, filename, es_id, payload)
 				break
 	return res
 
-def mla_import_zip(es, project, dirPath, filename, payload):
+def mla_import_zip(es, project, doctype, dirPath, filename, payload):
 	res = False
 	logger = logging.getLogger('mla_logger')
 	file_path = os.path.join(dirPath, filename)
@@ -349,10 +349,10 @@ def mla_import_zip(es, project, dirPath, filename, payload):
 		except:
 			logger.error("Exception on extractall():" + str(sys.exc_info()[0]))
 			return res
-		res = mla_import_log(es, project, extract_to_path, filename, payload)
+		res = mla_import_log(es, project, doctype, extract_to_path, filename, payload)
 	return res
 
-def mla_import(es, project, input_location, input_subfolder, output_location, fail_location, delay=0):
+def mla_import(es, project, doctype, input_location, input_subfolder, output_location, fail_location, delay=0):
 	logger = logging.getLogger('mla_logger')
 	scan_location = input_location
 	if (input_subfolder != None):
@@ -375,7 +375,7 @@ def mla_import(es, project, input_location, input_subfolder, output_location, fa
 					continue
 			i += 1
 			reletive_path = os.path.relpath(dirPath, input_location)
-			res = mla_import_zip(es, project, dirPath, filename, os.path.join(reletive_path, filename))
+			res = mla_import_zip(es, project, doctype, dirPath, filename, os.path.join(reletive_path, filename))
 			if (res):
 				j += 1
 			if (output_location != None):
@@ -402,16 +402,16 @@ def mla_import(es, project, input_location, input_subfolder, output_location, fa
 	elapsed = end - start
 	logger.info(str(j) + "/" + str(i) + " documents created; Time taken: " + str(elapsed) + " seconds.")
 
-def mla_import_loop(es, project, input_location, input_subfolder, output_location, fail_location, is_looping):
+def mla_import_loop(es, project, doctype, input_location, input_subfolder, output_location, fail_location, is_looping):
 	delay = 0
 	if is_looping:
 		delay = TIME_BUFFER
 	while True:
 		print "Importing..."
-		mla_import(es, project, input_location, input_subfolder, output_location, fail_location, delay)
+		mla_import(es, project, doctype, input_location, input_subfolder, output_location, fail_location, delay)
 		if (False == is_looping):
 			break
-			print "Waiting..."
+		print "Waiting..."
 		time.sleep(10)
 
 def usage():
@@ -435,10 +435,10 @@ def main(argv):
 	input_subfolder = None
 	output_location = None
 	fail_location = os.path.abspath(DEFAULT_FAIL_PATH)
-	doc_type = ES_DOC_TYPE
+	doctype = ES_DOC_TYPE
 	is_looping = False
 	try:
-		opts, args = getopt.getopt(argv, "i:s:o:f:lq", ["input_location=", "input_subfolder=", "output_location=", "fail_location=", "loop"])
+		opts, args = getopt.getopt(argv, "i:s:o:f:t:l", ["input_location=", "input_subfolder=", "output_location=", "fail_location=", "doc_type=", "loop"])
 	except getopt.GetoptError:
 		usage()
 		sys.exit(2)
@@ -458,7 +458,7 @@ def main(argv):
 		elif opt in ("-f", "--fail_location"):
 			fail_location = os.path.abspath(arg)
 		elif opt in ("-t", "--doc_type"):
-			doc_type = arg
+			doctype = arg
 		elif opt in ("-l", "--loop"):
 			is_looping = True
 	logger = logging.getLogger('mla_logger')
@@ -471,7 +471,7 @@ def main(argv):
 	fh.setFormatter(formatter)
 	logger.addHandler(fh)
 	logger.addHandler(ch)
-	logger.info("%s run with es_server_addr=%s, project=%s, input_location=%s, input_subfolder=%s, output_location=%s, fail_location=%s, is_looping=%s" % (LOG_PREFIX, es_server_addr, project, input_location, input_subfolder, output_location, fail_location, is_looping))
+	logger.info("%s run with es_server_addr=%s, project=%s, input_location=%s, input_subfolder=%s, output_location=%s, fail_location=%s, doctype=%s, is_looping=%s" % (LOG_PREFIX, es_server_addr, project, input_location, input_subfolder, output_location, fail_location, doctype, is_looping))
 	print "Press Enter key to continue"
 	a	=	raw_input()
 	es = Elasticsearch([{'host': es_server_addr, 'port': 9200}], max_retries=10, retry_on_timeout=True)
@@ -483,7 +483,7 @@ def main(argv):
 		print "Press enter key to continue"
 		a	=	raw_input()
 	try:
-		mla_import_loop(es, project, input_location, input_subfolder, output_location, fail_location, is_looping)
+		mla_import_loop(es, project, doctype, input_location, input_subfolder, output_location, fail_location, is_looping)
 	except:
 		msg = traceback.format_exc()
 		print msg
